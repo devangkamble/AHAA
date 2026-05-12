@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AHAA — Adaptive Health Advisor Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0A0A0A;--bg2:#111;--bg3:#1A1A1A;--bg4:#222;--bg5:#2A2A2A;
+  --y:#F5C518;--yg:rgba(245,197,24,.13);--yb:rgba(245,197,24,.32);
+  --txt:#FFF;--txt2:#A0A0A0;--txt3:#555;--on-y:#0A0A0A;
+  --bord:#252525;--green:#22C55E;--amber:#F59E0B;--red:#EF4444;
+  --fd:'DM Serif Display',Georgia,serif;
+  --fb:'DM Sans',system-ui,sans-serif;
+  --fm:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:var(--fb);background:var(--bg);color:var(--txt);height:100%;overflow:hidden}
+button{cursor:pointer;font-family:inherit}
+input,select,textarea{font-family:inherit}
+
+.nav{background:var(--bg2);height:52px;padding:0 1.25rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bord);flex-shrink:0}
+.nl{display:flex;align-items:center;gap:9px}
+.nm{width:29px;height:29px;background:var(--y);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:15px;color:var(--on-y);font-weight:700}
+.nt{font-size:13px;font-weight:600;color:var(--txt)}
+.nt em{color:var(--y);font-style:normal}
+.nb{font-size:9px;font-weight:700;letter-spacing:.08em;color:var(--on-y);background:var(--y);padding:2px 8px;border-radius:20px}
+
+.shell{display:flex;height:calc(100vh - 52px)}
+.intake{width:330px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bord);display:flex;flex-direction:column;overflow:hidden}
+.ih{background:var(--bg3);padding:.9rem 1rem;border-bottom:1px solid var(--bord);flex-shrink:0}
+.ih h2{font-family:var(--fd);font-size:1.05rem;color:var(--txt);margin-bottom:.15rem}
+.ih p{font-size:10.5px;color:var(--txt3);line-height:1.5}
+.ib{padding:.9rem 1rem;flex:1;overflow-y:auto}
+.ib::-webkit-scrollbar{width:3px}
+.ib::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
+
+.fg{margin-bottom:.75rem}
+.fg label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:4px}
+.fg input,.fg select{width:100%;padding:7px 10px;border:1px solid var(--bord);border-radius:8px;font-size:13px;font-weight:500;color:var(--txt);background:var(--bg3);outline:none;transition:border-color .15s,box-shadow .15s;-webkit-appearance:none;appearance:none}
+.fg select option{background:var(--bg3)}
+.fg input:focus,.fg select:focus{border-color:var(--y);box-shadow:0 0 0 3px var(--yg)}
+.fg input::placeholder{color:var(--txt3);font-weight:400}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:.75rem}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+
+.sl{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--y);margin:.85rem 0 .45rem;display:flex;align-items:center;gap:6px}
+.sl::after{content:'';flex:1;height:1px;background:var(--bord)}
+
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{font-size:10px;font-weight:500;padding:3px 8px;border:1px solid var(--bord);border-radius:20px;cursor:pointer;color:var(--txt2);background:var(--bg3);transition:all .12s;user-select:none}
+.chip:hover{border-color:var(--y);color:var(--y)}
+.chip.on{background:var(--yg);border-color:var(--yb);color:var(--y);font-weight:600}
+
+.srow{display:flex;align-items:center;gap:8px}
+input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:3px;background:var(--bg5);border-radius:2px;outline:none;cursor:pointer}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--y);border:2px solid var(--bg);box-shadow:0 0 6px rgba(245,197,24,.5);cursor:pointer}
+.sv{font-size:9px;font-weight:700;color:var(--on-y);background:var(--y);padding:2px 7px;border-radius:20px;white-space:nowrap}
+
+.gg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.gc{padding:7px 4px;border:1px solid var(--bord);border-radius:8px;text-align:center;cursor:pointer;transition:all .12s;background:var(--bg3)}
+.gc:hover{border-color:var(--y)}
+.gc.on{border-color:var(--yb);background:var(--yg)}
+.gc .gi{font-size:13px;margin-bottom:1px}
+.gc .gl{font-size:9px;font-weight:700;color:var(--txt2);letter-spacing:.03em;text-transform:uppercase}
+.gc.on .gl{color:var(--y)}
+
+.bgen{width:100%;padding:11px;margin-top:.8rem;background:var(--y);color:var(--on-y);border:none;border-radius:9px;font-size:13px;font-weight:700;letter-spacing:.02em;transition:all .15s;box-shadow:0 4px 16px rgba(245,197,24,.2)}
+.bgen:hover:not(:disabled){background:#FFD740;box-shadow:0 4px 24px rgba(245,197,24,.35);transform:translateY(-1px)}
+.bgen:disabled{opacity:.45;cursor:not-allowed}
+
+.advisor{flex:1;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+
+.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
+.wm{width:52px;height:52px;background:var(--y);border-radius:13px;display:flex;align-items:center;justify-content:center;font-family:var(--fd);font-size:26px;color:var(--on-y);margin-bottom:.7rem}
+.welcome h2{font-family:var(--fd);font-size:1.3rem;color:var(--txt);margin-bottom:.4rem}
+.welcome p{font-size:12.5px;color:var(--txt2);max-width:290px;line-height:1.7}
+.wcards{display:flex;gap:7px;margin-top:.9rem;flex-wrap:wrap;justify-content:center}
+.wcard{background:var(--bg3);border:1px solid var(--bord);border-radius:7px;padding:7px 10px;font-size:10px;color:var(--txt2);font-weight:500;text-align:center;max-width:120px}
+.wcard strong{display:block;color:var(--y);margin-bottom:1px;font-size:11px}
+
+.report{flex:1;overflow-y:auto;padding:.9rem .9rem 0;display:none}
+.report.on{display:block}
+.report::-webkit-scrollbar{width:3px}
+.report::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:2px}
+
+.mstrip{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:.8rem}
+.mc{background:var(--bg3);border:1px solid var(--bord);border-radius:9px;padding:.65rem .6rem;text-align:center}
+.mcl{font-size:7.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);margin-bottom:3px}
+.mcv{font-family:var(--fd);font-size:1.25rem;line-height:1;color:var(--txt);margin-bottom:1px}
+.mcv.y{color:var(--y)}.mcv.g{color:var(--green)}.mcv.a{color:var(--amber)}.mcv.r{color:var(--red)}
+.mcs{font-size:8.5px;color:var(--txt3)}
+
+.as{padding:.5rem .75rem;border-radius:7px;margin-bottom:.5rem;display:flex;gap:6px;font-size:11.5px;line-height:1.5;align-items:flex-start}
+.as.danger{background:#1C0808;border:1px solid rgba(239,68,68,.35);color:#FCA5A5}
+.as.warn{background:#1A1100;border:1px solid rgba(245,158,11,.35);color:#FCD34D}
+
+.msg{margin-bottom:.8rem}
+.mr{font-size:8.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:.22rem;display:flex;align-items:center;gap:4px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--y);flex-shrink:0}
+.dot.u{background:var(--txt3)}
+.msg.user .mr{justify-content:flex-end}
+.mb{background:var(--bg3);border:1px solid var(--bord);border-radius:2px 9px 9px 9px;padding:.7rem .85rem}
+.msg.user .mb{background:var(--bg4);border-radius:9px 2px 9px 9px}
+
+.typing{display:flex;gap:4px;align-items:center;padding:.12rem 0}
+.typing span{width:5px;height:5px;border-radius:50%;background:var(--y);animation:bce .9s ease-in-out infinite}
+.typing span:nth-child(2){animation-delay:.15s}
+.typing span:nth-child(3){animation-delay:.3s}
+@keyframes bce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-5px)}}
+
+.st{font-size:13px;line-height:1.8;color:var(--txt);white-space:pre-wrap;word-wrap:break-word}
+.st h1,.st h2,.st h3{font-family:var(--fd);color:var(--y);margin:.9rem 0 .3rem;line-height:1.3}
+.st h1{font-size:1.15rem}.st h2{font-size:1rem}.st h3{font-size:.9rem}
+.st strong{font-weight:600;color:var(--txt)}
+.st em{color:var(--y);font-style:normal;font-weight:500}
+.st ul,.st ol{margin:.3rem 0 .3rem 1.1rem}
+.st li{margin-bottom:.15rem}
+.st table{width:100%;border-collapse:collapse;font-size:11.5px;margin:.65rem 0;border-radius:6px;overflow:hidden}
+.st th{background:var(--bg5);color:var(--y);padding:5px 8px;font-size:8.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;text-align:left}
+.st td{padding:6px 8px;border-bottom:1px solid var(--bord);color:var(--txt2)}
+.st tr:last-child td{border-bottom:none}
+.st tr:nth-child(even) td{background:var(--bg4)}
+.st blockquote{border-left:2px solid var(--y);padding:.3rem .75rem;background:var(--yg);border-radius:0 5px 5px 0;margin:.45rem 0;color:var(--txt2);font-size:12px}
+.st hr{border:none;border-top:1px solid var(--bord);margin:.85rem 0}
+.st code{font-family:var(--fm);font-size:11px;background:var(--bg4);padding:1px 4px;border-radius:3px;color:var(--y)}
+
+.chatbar{border-top:1px solid var(--bord);background:var(--bg2);padding:.6rem .85rem;display:none;gap:7px;align-items:flex-end;flex-shrink:0}
+.chatbar.on{display:flex}
+.chatbar textarea{flex:1;resize:none;border:1px solid var(--bord);border-radius:8px;padding:7px 10px;font-size:12.5px;color:var(--txt);background:var(--bg3);outline:none;line-height:1.5;max-height:80px;min-height:34px;transition:border-color .15s}
+.chatbar textarea:focus{border-color:var(--y);box-shadow:0 0 0 3px var(--yg)}
+.chatbar textarea::placeholder{color:var(--txt3)}
+.bsend{width:34px;height:34px;background:var(--y);border:none;border-radius:7px;color:var(--on-y);font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;transition:all .15s}
+.bsend:hover{background:#FFD740}
+.bsend:disabled{opacity:.35;cursor:not-allowed}
+
+/* PHASE 3 STYLES */
+.action-row{display:flex;gap:6px;margin:.4rem 0 .9rem;flex-wrap:wrap;align-items:center}
+.abtn{display:flex;align-items:center;gap:5px;padding:6px 12px;border:1px solid var(--bord);background:var(--bg3);color:var(--txt2);border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.abtn:hover{border-color:var(--y);color:var(--y)}
+.abtn.active{border-color:var(--yb);background:var(--yg);color:var(--y)}
+.abtn-icon{font-size:13px}
+.rbtn{margin:0;padding:6px 13px;border:1px solid var(--bord);background:transparent;color:var(--txt3);border-radius:7px;font-size:11px;font-weight:600;transition:all .12s;cursor:pointer}
+.rbtn:hover{border-color:var(--y);color:var(--y)}
+.voice-status{display:none;align-items:center;gap:6px;font-size:11px;color:var(--y);background:var(--yg);border:1px solid var(--yb);padding:4px 10px;border-radius:20px;margin-bottom:.5rem}
+.voice-status.on{display:flex}
+.voice-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:vpulse 1s ease-in-out infinite}
+@keyframes vpulse{0%,100%{opacity:1}50%{opacity:.4}}
+.drug-hint{font-size:10px;color:var(--txt3);margin-top:-10px;margin-bottom:.75rem;line-height:1.4}
+
+/* PRINT STYLES */
+@media print{
+  .nav,.intake,.chatbar,.action-row,.voice-status{display:none!important}
+  .shell{display:block;height:auto}
+  .advisor{overflow:visible;height:auto}
+  .report{display:block!important;padding:0;overflow:visible;height:auto}
+  body,html{overflow:auto;height:auto;background:#fff}
+  .mc{background:#f5f5f5;border:1px solid #ddd}
+  .mcl{color:#666}.mcv{color:#111}.mcs{color:#666}
+  .as.warn{background:#FFFBEB;border:1px solid #F59E0B;color:#78350F}
+  .as.danger{background:#FEF2F2;border:1px solid #EF4444;color:#7F1D1D}
+  .st{color:#111}.st h2,.st h3{color:#C9A012}
+  .st th{background:#111;color:#F5C518}
+  .st td{color:#444;border-bottom:1px solid #ddd}
+  .mb{background:#f9f9f9;border:1px solid #ddd}
+  .mr{color:#999}.dot{background:#C9A012}
+  .print-header{display:block!important}
+}
+.print-header{display:none;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:2px solid #C9A012}
+.print-header h1{font-size:1.4rem;font-weight:700;color:#111;font-family:Georgia,serif}
+.print-header p{font-size:12px;color:#666;margin-top:3px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nl">
+    <div class="nm">A</div>
+    <div class="nt">AHAA <em>· Adaptive Health Advisor Agent</em></div>
+  </div>
+  <div class="nb">PHASE 3 · AI</div>
+</nav>
+
+<div class="shell">
+  <div class="intake">
+    <div class="ih">
+      <h2>Health Profile</h2>
+      <p>Fill your details. Claude generates a personalized clinical plan with live safety checks.</p>
+    </div>
+    <div class="ib">
+
+      <div class="sl">Body metrics</div>
+      <div class="g3">
+        <div class="fg"><label>Height cm</label><input type="number" id="ht" value="175" min="100" max="250"></div>
+        <div class="fg"><label>Weight kg</label><input type="number" id="wt" value="75" min="30" max="300"></div>
+        <div class="fg"><label>Age</label><input type="number" id="ag" value="30" min="16" max="99"></div>
+      </div>
+      <div class="fg"><label>Gender</label>
+        <select id="gn">
+          <option value="Male">Male</option>
+          <option value="Female">Female</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="sl">Medical conditions</div>
+      <div class="chips">
+        <div class="chip" data-v="Type 2 Diabetes">Type 2 Diabetes</div>
+        <div class="chip" data-v="Hypertension">Hypertension</div>
+        <div class="chip" data-v="Heart Disease">Heart Disease</div>
+        <div class="chip" data-v="Celiac Disease">Celiac Disease</div>
+        <div class="chip" data-v="Kidney Disease">Kidney Disease</div>
+        <div class="chip" data-v="Osteoporosis">Osteoporosis</div>
+        <div class="chip" data-v="GERD / Acid Reflux">GERD</div>
+        <div class="chip" data-v="Anemia">Anemia</div>
+        <div class="chip" data-v="Hypothyroidism">Hypothyroidism</div>
+        <div class="chip" data-v="Arthritis">Arthritis</div>
+        <div class="chip" data-v="Pregnancy">Pregnancy</div>
+        <div class="chip" data-v="Eating Disorder (History)">Eating Disorder Hx</div>
+      </div>
+
+      <div class="sl">Injuries &amp; allergies</div>
+      <div class="g2">
+        <div class="fg"><label>Injuries</label><input type="text" id="inj" placeholder="e.g. ankle sprain"></div>
+        <div class="fg"><label>Food Allergies</label><input type="text" id="alg" placeholder="e.g. nuts, gluten"></div>
+      </div>
+
+      <div class="fg">
+        <label>Type of Diet</label>
+        <select id="diet">
+          <option value="Non-Vegetarian">Non-Vegetarian</option>
+          <option value="Vegetarian">Vegetarian</option>
+          <option value="Vegan">Vegan</option>
+          <option value="Pescatarian">Pescatarian (fish, no meat)</option>
+          <option value="Keto">Keto</option>
+          <option value="Mediterranean">Mediterranean</option>
+          <option value="Halal">Halal</option>
+          <option value="Kosher">Kosher</option>
+          <option value="Gluten-Free Diet">Gluten-Free Diet</option>
+          <option value="No Preference">No Preference</option>
+        </select>
+      </div>
+
+      <div class="fg">
+        <label>Country</label>
+        <input type="text" id="country" placeholder="e.g. USA, India, UAE, UK">
+      </div>
+
+      <div class="fg"><label>Drug Allergies</label>
+        <input type="text" id="drug" placeholder="e.g. sulfa, penicillin, NSAIDs, aspirin">
+      </div>
+      <p class="drug-hint">Drug allergies affect supplement &amp; recovery recommendations</p>
+
+      <div class="sl">Activity level</div>
+      <div class="srow" style="margin-bottom:.4rem">
+        <input type="range" id="act" min="0" max="4" value="1" step="1">
+        <div class="sv" id="alab">Lightly Active</div>
+      </div>
+
+      <div class="sl">Health goals</div>
+      <div class="gg">
+        <div class="gc" data-v="Weight Loss"><div class="gi">↓</div><div class="gl">Weight Loss</div></div>
+        <div class="gc" data-v="Maintenance"><div class="gi">=</div><div class="gl">Maintenance</div></div>
+        <div class="gc" data-v="Muscle Building"><div class="gi">↑</div><div class="gl">Muscle</div></div>
+        <div class="gc" data-v="Cardiovascular"><div class="gi">♥</div><div class="gl">Cardio</div></div>
+        <div class="gc" data-v="Injury Recovery"><div class="gi">✦</div><div class="gl">Recovery</div></div>
+        <div class="gc" data-v="Flexibility"><div class="gi">∿</div><div class="gl">Flexibility</div></div>
+      </div>
+
+      <button class="bgen" id="bgen">Generate My Health Plan →</button>
+    </div>
+  </div>
+
+  <div class="advisor">
+    <div class="welcome" id="welcome">
+      <div class="wm">A</div>
+      <h2>Your AI Health Advisor</h2>
+      <p>Complete your profile and click <strong style="color:var(--y)">Generate</strong>. Claude builds a full personalized clinical plan — then ask follow-ups.</p>
+      <div class="wcards">
+        <div class="wcard"><strong>Phase 1 ✓</strong>5-step CoT reasoning</div>
+        <div class="wcard"><strong>Phase 2 ✓</strong>Live AI + Web UI</div>
+        <div class="wcard"><strong>Phase 3 →</strong>Voice + Export + Drug Allergies</div>
+      </div>
+    </div>
+
+    <div class="report" id="report">
+      <div class="print-header">
+        <h1>AHAA — Adaptive Health Advisor Agent</h1>
+        <p>Personalized clinical health plan · Generated by AHAA · DCP Spring 2026</p>
+      </div>
+      <div class="mstrip" id="mstrip" style="display:none"></div>
+      <div id="astrip"></div>
+      <div id="thread"></div>
+      <div class="action-row" id="action-row" style="display:none">
+        <button class="abtn" id="btn-speak" onclick="toggleSpeak()">
+          <span class="abtn-icon">🔊</span> Read Plan
+        </button>
+        <button class="abtn" onclick="exportPDF()">
+          <span class="abtn-icon">📄</span> Export PDF
+        </button>
+        <button class="rbtn" onclick="restart()">← New Profile</button>
+      </div>
+      <div class="voice-status" id="voice-status">
+        <div class="voice-dot"></div>
+        <span id="voice-status-text">Reading your plan...</span>
+      </div>
+    </div>
+
+    <div class="chatbar" id="chatbar">
+      <textarea id="cinput" placeholder="Ask a follow-up… e.g. 'Give me a 7-day meal plan'" rows="1"></textarea>
+      <button class="bsend" id="bsend">➤</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ACTS=['Sedentary','Lightly Active','Moderately Active','Very Active','Extra Active'];
+const AMUL=[1.2,1.375,1.55,1.725,1.9];
+let hist=[],streaming=false,conds=new Set(),goals=new Set(),SYS='',planText='';
+let speechSynth=window.speechSynthesis,currentUtterance=null,isSpeaking=false;
+
+document.getElementById('act').addEventListener('input',e=>{
+  document.getElementById('alab').textContent=ACTS[+e.target.value];
+});
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+  c.classList.toggle('on');
+  conds[c.classList.contains('on')?'add':'delete'](c.dataset.v);
+}));
+document.querySelectorAll('.gc').forEach(c=>c.addEventListener('click',()=>{
+  c.classList.toggle('on');
+  goals[c.classList.contains('on')?'add':'delete'](c.dataset.v);
+}));
+document.getElementById('bgen').addEventListener('click',generate);
+document.getElementById('bsend').addEventListener('click',followUp);
+document.getElementById('cinput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();followUp();}
+});
+document.getElementById('cinput').addEventListener('input',function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,80)+'px';
+});
+if(speechSynth&&speechSynth.onvoiceschanged!==undefined){
+  speechSynth.onvoiceschanged=()=>speechSynth.getVoices();
+}
+
+function compute(){
+  const h=+document.getElementById('ht').value||175;
+  const w=+document.getElementById('wt').value||75;
+  const a=+document.getElementById('ag').value||30;
+  const g=document.getElementById('gn').value;
+  const ai=+document.getElementById('act').value;
+  const hm=h/100,bmi=Math.round(w/(hm*hm)*10)/10;
+  let cat,col;
+  if(bmi<18.5){cat='Underweight';col='a';}
+  else if(bmi<25){cat='Normal Weight';col='g';}
+  else if(bmi<30){cat='Overweight';col='a';}
+  else{cat='Obese';col='r';}
+  let bmr=g==='Male'?10*w+6.25*h-5*a+5:g==='Female'?10*w+6.25*h-5*a-161:10*w+6.25*h-5*a-78;
+  const tdee=Math.round(bmr*AMUL[ai]);
+  let d=0;
+  if(goals.has('Weight Loss'))d-=500;
+  if(goals.has('Muscle Building'))d+=300;
+  return{h,w,a,g,ai,bmi,cat,col,bmr:Math.round(bmr),tdee,cal:Math.max(1200,tdee+d)};
+}
+
+function renderMetrics(n){
+  const s=document.getElementById('mstrip');
+  s.style.display='grid';
+  s.innerHTML=`
+    <div class="mc"><div class="mcl">BMI</div><div class="mcv ${n.col}">${n.bmi}</div><div class="mcs">${n.cat}</div></div>
+    <div class="mc"><div class="mcl">BMR</div><div class="mcv">${n.bmr.toLocaleString()}</div><div class="mcs">kcal/day</div></div>
+    <div class="mc"><div class="mcl">TDEE</div><div class="mcv">${n.tdee.toLocaleString()}</div><div class="mcs">w/ activity</div></div>
+    <div class="mc"><div class="mcl">Goal Cal</div><div class="mcv y">${n.cal.toLocaleString()}</div><div class="mcs">daily target</div></div>`;
+}
+
+const ALT={
+  'Heart Disease':{l:'danger',m:'⚠ Physician clearance required before any exercise.'},
+  'Kidney Disease':{l:'danger',m:'⚠ Protein intake must be supervised by a dietitian.'},
+  'Pregnancy':{l:'danger',m:'⚠ All changes require OB-GYN approval.'},
+  'Eating Disorder (History)':{l:'danger',m:'⚠ Caloric restriction contraindicated — refer to dietitian.'},
+  'Type 2 Diabetes':{l:'warn',m:'⚠ Monitor blood glucose before and after exercise.'},
+  'Hypertension':{l:'warn',m:'⚠ Limit sodium <1,500 mg/day. Avoid maximal-effort lifts.'},
+  'Celiac Disease':{l:'warn',m:'⚠ Strict gluten-free diet required.'},
+  'Arthritis':{l:'warn',m:'⚠ Prioritize low-impact movement. Monitor joint pain.'},
+  'GERD / Acid Reflux':{l:'warn',m:'⚠ Avoid trigger foods and exercise within 2h of meals.'},
+};
+function renderAlerts(){
+  const s=document.getElementById('astrip');
+  s.innerHTML='';let ref=false;
+  conds.forEach(c=>{const r=ALT[c];if(!r)return;if(r.l==='danger')ref=true;
+    s.innerHTML+=`<div class="as ${r.l}">${r.m} <strong>(${c})</strong></div>`;});
+  if(ref)s.innerHTML+=`<div class="as danger">🚨 <strong>Physician Referral Required</strong> — consult a licensed physician before starting.</div>`;
+}
+
+function buildSys(n){
+  const drugAlg=document.getElementById('drug').value.trim();
+  const diet=document.getElementById('diet').value;
+  const country=document.getElementById('country').value.trim();
+  return`You are AHAA — Adaptive Health Advisor Agent. You are the digital twin of a certified personal trainer and health coach with 1.5 years of clinical experience. Clinical AI built for the DCP course "Vibe Coding to Agent Engineering, Spring 2026."
+
+PATIENT PROFILE:
+- Height: ${n.h}cm | Weight: ${n.w}kg | Age: ${n.a} | Gender: ${n.g}
+- BMI: ${n.bmi} (${n.cat}) | BMR: ${n.bmr} kcal/day | TDEE: ${n.tdee} kcal/day
+- Activity: ${ACTS[n.ai]} (×${AMUL[n.ai]}) | Goal Calories: ${n.cal} kcal/day (floor: 1,200)
+- Conditions: ${conds.size?[...conds].join(', '):'None'}
+- Injuries: ${document.getElementById('inj').value.trim()||'None'}
+- Food Allergies: ${document.getElementById('alg').value.trim()||'None'}
+- Drug Allergies: ${drugAlg||'None'}
+- Diet Type: ${diet}
+- Country / Region: ${country||'Not specified'}
+- Goals: ${goals.size?[...goals].join(', '):'General wellness'}
+${drugAlg?`
+DRUG ALLERGY CONSTRAINTS: Do NOT recommend any supplements, OTC medications, or recovery aids related to: ${drugAlg}. If sulfa allergy: avoid sulfonamide supplements. If NSAID/aspirin allergy: avoid ibuprofen-based recovery products. Flag any supplement that could interact.`:''}
+
+DIET & REGIONAL FOOD CONSTRAINTS:
+- Diet type is: ${diet}
+- If Vegetarian: no meat, no poultry, no seafood. Recommend eggs and dairy unless Vegan.
+- If Vegan: no animal products whatsoever. No meat, fish, eggs, dairy, honey.
+- If Pescatarian: fish and seafood allowed, no meat or poultry.
+- If Keto: keep carbohydrates under 30g/day. High fat, moderate protein. No grains, sugar, starchy vegetables.
+- If Halal: no pork, no alcohol-based ingredients. All meat must be halal-certified.
+- If Kosher: no pork, no shellfish. Do not mix meat and dairy in the same meal.
+- If Gluten-Free Diet: no wheat, barley, rye, spelt. Applies even without Celiac diagnosis.
+- If Mediterranean: emphasize olive oil, fish, legumes, whole grains, vegetables, limited red meat.
+
+REGIONAL FOOD AVAILABILITY (${country||'general'}):
+- Recommend foods that are commonly available and affordable in ${country||'the user\'s region'}.
+- Use locally familiar food names where possible.
+- Avoid recommending foods that are rare, expensive, or culturally unusual for this region.
+- If country is India: emphasize dal, roti, rice (in moderation), paneer, vegetables, spices.
+- If country is UAE or Middle East: emphasize hummus, grilled meats, lentils, dates (in moderation), flatbread.
+- If country is USA: standard western supermarket foods. Emphasize lean proteins, whole grains, produce.
+- If country is UK: similar to USA but note local brands where helpful.
+- If country is unknown: use globally available foods.
+
+CLINICALLY VALIDATED SAFETY RULES (enforced at system level — never override):
+- Type 2 Diabetes → no white rice, sugary drinks, pastries, fruit juice
+- Hypertension → no high-sodium foods; no maximal-effort lifts
+- Heart Disease → physician referral required; no HIIT, heavy powerlifting
+- Celiac → strict gluten-free (no wheat, barley, rye)
+- Kidney Disease → physician referral; restrict high-potassium/phosphorus
+- Osteoporosis → no high-impact jumping
+- Eating Disorder (History) → NO caloric restriction; refer to dietitian
+- Ankle sprain → remove running, jumping, box jumps, burpees, lateral shuffles
+- Knee injury → remove squats, lunges, running, box jumps, leg press
+- Lower back → remove deadlifts, good mornings, sit-ups, leg raises
+- Shoulder injury → remove overhead press, pull-ups, bench press, push-ups
+- GERD → avoid spicy, citrus, coffee, chocolate, alcohol, fatty foods
+- Arthritis → no high-impact; no heavy powerlifting
+- Pregnancy → OB-GYN approval required for everything
+
+RESPONSE FORMAT (follow exactly — 7 sections):
+1. 2-sentence personalized greeting with their exact BMI and calorie target
+2. ## ⚠️ Safety Notes (only if conditions/injuries present)
+3. ## 📊 BMI & Calorie Summary (markdown table)
+4. ## 🥗 Nutritional Framework
+   Table with EXACTLY 6 columns filled completely:
+   | Metric | Daily Total | Breakfast (25%) | Lunch (35%) | Dinner (30%) | Snack (10%) |
+   Rows: Calories (kcal), Protein (g), Carbs (g), Fat (g). Calculate ALL meal columns.
+   After the table, list 6-8 specific food recommendations that:
+   - Respect the user's diet type (${diet})
+   - Are easily available in ${country||'their region'}
+   - Are safe given their conditions and allergies
+   Use locally familiar names where possible.
+5. ## 🏋️ Adaptive Fitness Plan — 5-Day Weekly Schedule
+   Create a day-by-day weekly plan with exactly this structure:
+
+   **Weekly Overview:**
+   | Day | Focus | Type |
+   |---|---|---|
+   | Monday | [muscle group focus] | Training |
+   | Tuesday | [muscle group focus] | Training |
+   | Wednesday | Active Recovery | Rest/Light |
+   | Thursday | [muscle group focus] | Training |
+   | Friday | [muscle group focus] | Training |
+   | Saturday | [muscle group focus OR cardio] | Training |
+   | Sunday | Full Rest | Rest |
+
+   Then for each of the 5 training days, create a detailed section:
+
+   **Monday — [Focus Name]**
+   | Exercise | Sets×Reps | Muscle Group | Rest | Notes |
+   List 4-6 exercises per day. Sets×Reps like "3×12". Rest like "60 sec".
+   Filter ALL exercises for the user's injuries and conditions.
+   Never put muscle group in Sets×Reps column.
+
+   **Tuesday — [Focus Name]**
+   | Exercise | Sets×Reps | Muscle Group | Rest | Notes |
+   [4-6 exercises]
+
+   **Wednesday — Active Recovery**
+   Suggest 2-3 light activities (walking, stretching, yoga, foam rolling).
+
+   **Thursday — [Focus Name]**
+   | Exercise | Sets×Reps | Muscle Group | Rest | Notes |
+   [4-6 exercises]
+
+   **Friday — [Focus Name]**
+   | Exercise | Sets×Reps | Muscle Group | Rest | Notes |
+   [4-6 exercises]
+
+   **Saturday — [Focus Name or Cardio]**
+   | Exercise | Sets×Reps | Muscle Group | Rest | Notes |
+   [4-6 exercises]
+
+   **Sunday — Full Rest**
+   Emphasize recovery: sleep, hydration, meal prep for the week ahead.
+
+   All exercises must be filtered for the user's specific injuries and conditions.
+   Never include contraindicated movements.
+6. ## 🔒 Safety Alerts (bolded per condition; include drug allergy notes if applicable)
+7. ## 💡 Week 1 Action Steps (3 concrete steps starting tomorrow)
+
+Tone: Clinical accuracy in plain English. Reference actual numbers. Never recommend anything contraindicated.`;
+}
+
+async function callClaude(sys,messages,onChunk){
+  const res=await fetch('/api/chat',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({system:sys,messages,max_tokens:2048})
+  });
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`Server error ${res.status}`);}
+  const reader=res.body.getReader(),dec=new TextDecoder();
+  let buf='';
+  while(true){
+    const{done,value}=await reader.read();if(done)break;
+    buf+=dec.decode(value,{stream:true});
+    const lines=buf.split('\n');buf=lines.pop();
+    for(const line of lines){
+      if(!line.startsWith('data: '))continue;
+      const raw=line.slice(6);if(raw==='[DONE]')continue;
+      try{const p=JSON.parse(raw);if(p.type==='content_block_delta'&&p.delta?.type==='text_delta')onChunk(p.delta.text);}catch{}
+    }
+  }
+}
+
+function md(t){
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^\|(.+)\|\s*$/gm,row=>'<tr>'+row.split('|').slice(1,-1).map(c=>`<td>${c.trim()}</td>`).join('')+'</tr>')
+    .replace(/(<tr>[\s\S]*?<\/tr>)+/g,tbl=>{
+      const rows=tbl.match(/<tr>[\s\S]*?<\/tr>/g)||[];
+      if(rows.length<2)return tbl;
+      return`<table><thead>${rows[0].replace(/<td>/g,'<th>').replace(/<\/td>/g,'</th>')}</thead><tbody>${rows.slice(2).join('')}</tbody></table>`;
+    })
+    .replace(/^\|[-|: ]+\|\s*$/gm,'')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>').replace(/^## (.+)$/gm,'<h2>$1</h2>').replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`(.+?)`/g,'<code>$1</code>')
+    .replace(/^> (.+)$/gm,'<blockquote>$1</blockquote>').replace(/^---+$/gm,'<hr>')
+    .replace(/^\d+\. (.+)$/gm,'<oli>$1</oli>')
+    .replace(/(<oli>[\s\S]*?<\/oli>)/g,b=>'<ol>'+b.replace(/<oli>/g,'<li>').replace(/<\/oli>/g,'</li>')+'</ol>')
+    .replace(/^[-*] (.+)$/gm,'<li>$1</li>').replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+    .replace(/\n{2,}/g,'</p><p>').replace(/\n/g,'<br>');
+}
+
+function addMsg(role,content,spin=false){
+  const t=document.getElementById('thread');
+  const d=document.createElement('div');
+  d.className=`msg${role==='user'?' user':''}`;
+  d.innerHTML=`<div class="mr"><div class="dot${role==='user'?' u':''}"></div>${role==='user'?'You':'AHAA Advisor'}</div>
+    <div class="mb">${spin?'<div class="typing"><span></span><span></span><span></span></div>':`<div class="st">${md(content)}</div>`}</div>`;
+  t.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'end'});return d;
+}
+function setMsg(el,text){
+  el.querySelector('.mb').innerHTML=`<div class="st">${md(text)}</div>`;
+  el.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+async function generate(){
+  if(streaming)return;
+  if(goals.size===0){alert('Please select at least one health goal.');return;}
+  const n=compute();SYS=buildSys(n);
+  document.getElementById('welcome').style.display='none';
+  document.getElementById('report').classList.add('on');
+  renderMetrics(n);renderAlerts();
+  document.getElementById('thread').innerHTML='';hist=[];planText='';
+  const umsg=`Generate my complete adaptive health plan. BMI ${n.bmi} (${n.cat}), TDEE ${n.tdee} kcal, goal ${n.cal} kcal.${conds.size?` Conditions: ${[...conds].join(', ')}.`:''} Goals: ${[...goals].join(', ')}.`;
+  hist.push({role:'user',content:umsg});
+  streaming=true;
+  document.getElementById('bgen').disabled=true;
+  document.getElementById('bsend').disabled=true;
+  const el=addMsg('assistant','',true);let full='';
+  try{
+    await callClaude(SYS,hist,chunk=>{full+=chunk;setMsg(el,full);});
+    hist.push({role:'assistant',content:full});
+    planText=full;
+    document.getElementById('chatbar').classList.add('on');
+    document.getElementById('action-row').style.display='flex';
+  }catch(e){
+    setMsg(el,`**Error:** ${e.message}\n\nMake sure server.py is running.`);
+  }
+  streaming=false;
+  document.getElementById('bgen').disabled=false;
+  document.getElementById('bsend').disabled=false;
+}
+
+async function followUp(){
+  if(streaming)return;
+  const inp=document.getElementById('cinput');
+  const text=inp.value.trim();if(!text)return;
+  inp.value='';inp.style.height='auto';
+  addMsg('user',text);hist.push({role:'user',content:text});
+  streaming=true;document.getElementById('bsend').disabled=true;
+  const el=addMsg('assistant','',true);let full='';
+  try{
+    await callClaude(SYS,hist,chunk=>{full+=chunk;setMsg(el,full);});
+    hist.push({role:'assistant',content:full});
+    planText=full;
+  }catch(e){setMsg(el,`**Error:** ${e.message}`);}
+  streaming=false;document.getElementById('bsend').disabled=false;
+}
+
+function restart(){
+  stopSpeech();
+  document.getElementById('welcome').style.display='flex';
+  document.getElementById('report').classList.remove('on');
+  document.getElementById('chatbar').classList.remove('on');
+  document.getElementById('action-row').style.display='none';
+  document.getElementById('mstrip').style.display='none';
+  document.getElementById('astrip').innerHTML='';
+  document.getElementById('thread').innerHTML='';
+  hist=[];conds.clear();goals.clear();SYS='';planText='';
+  document.querySelectorAll('.chip.on,.gc.on').forEach(e=>e.classList.remove('on'));
+  document.getElementById('diet').value='Non-Vegetarian';
+  document.getElementById('country').value='';
+}
+
+/* PHASE 3: EXPORT PDF */
+function exportPDF(){
+  stopSpeech();
+  window.print();
+}
+
+/* PHASE 3: VOICE OUTPUT */
+function stripMarkdown(text){
+  return text
+    .replace(/^#{1,3} /gm,'').replace(/\*\*(.+?)\*\*/g,'$1').replace(/\*(.+?)\*/g,'$1')
+    .replace(/`(.+?)`/g,'$1').replace(/\|.+\|/g,'').replace(/[-*] /gm,'')
+    .replace(/^\d+\. /gm,'').replace(/^> /gm,'').replace(/---+/g,'')
+    .replace(/\n{2,}/g,'. ').replace(/\n/g,' ').trim();
+}
+
+function toggleSpeak(){
+  if(isSpeaking){stopSpeech();}else{startSpeech();}
+}
+
+function startSpeech(){
+  if(!speechSynth){alert('Text-to-speech not supported in this browser.');return;}
+  if(!planText){alert('Generate a plan first.');return;}
+  stopSpeech();
+  const cleanText=stripMarkdown(planText);
+  currentUtterance=new SpeechSynthesisUtterance(cleanText);
+  const voices=speechSynth.getVoices();
+  const preferred=voices.find(v=>v.lang.startsWith('en')&&v.name.toLowerCase().includes('female'))
+    ||voices.find(v=>v.lang.startsWith('en'))||voices[0];
+  if(preferred)currentUtterance.voice=preferred;
+  currentUtterance.rate=0.9;currentUtterance.pitch=1.0;currentUtterance.volume=1.0;
+  currentUtterance.onstart=()=>{
+    isSpeaking=true;
+    document.getElementById('btn-speak').classList.add('active');
+    document.getElementById('btn-speak').innerHTML='<span class="abtn-icon">⏹</span> Stop';
+    document.getElementById('voice-status').classList.add('on');
+  };
+  currentUtterance.onend=currentUtterance.onerror=()=>{
+    isSpeaking=false;
+    document.getElementById('btn-speak').classList.remove('active');
+    document.getElementById('btn-speak').innerHTML='<span class="abtn-icon">🔊</span> Read Plan';
+    document.getElementById('voice-status').classList.remove('on');
+  };
+  speechSynth.speak(currentUtterance);
+}
+
+function stopSpeech(){
+  if(speechSynth)speechSynth.cancel();
+  isSpeaking=false;
+  const btn=document.getElementById('btn-speak');
+  if(btn){btn.classList.remove('active');btn.innerHTML='<span class="abtn-icon">🔊</span> Read Plan';}
+  const vs=document.getElementById('voice-status');
+  if(vs)vs.classList.remove('on');
+}
+</script>
+</body>
+</html>
