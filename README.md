@@ -1,4 +1,4 @@
-# AHAA — Adaptive Health Advisor Agent
+# AHAA : Adaptive Health Advisor Agent
 
 A local, privacy-first health advisory app that generates personalized nutrition and workout plans. It combines a deterministic computation engine (BMR/TDEE/BMI, macros) with a guardrail-checked LLM (via Ollama) orchestrated by a LangGraph pipeline.
 
